@@ -1,0 +1,17 @@
+{
+  "language": "en",
+  "purpose": "Educational demo content; not a product catalogue or individual installation design",
+  "sources": [
+    {"id":"epa", "title":"EPA WaterSense - Cation Exchange Water Softeners", "url":"https://www.epa.gov/watersense/cation-exchange-water-softeners"},
+    {"id":"psu", "title":"Penn State Extension - Water Softening", "url":"https://extension.psu.edu/water-softening"}
+  ],
+  "topics": [
+    {"id":"hardness", "keywords":["hardness","hard water","scale","calcium","magnesium"], "answer":"Calcium and magnesium cause water hardness. Hardness can contribute to scale and soap residue. Measure hardness before selecting treatment.", "source":"psu"},
+    {"id":"exchange", "keywords":["ion exchange","resin","how does","how work"], "answer":"An ion-exchange softener exchanges hardness ions for sodium or potassium ions on resin. The resin periodically needs regeneration.", "source":"epa"},
+    {"id":"regeneration", "keywords":["regeneration","regenerate","brine","salt"], "answer":"Regeneration restores the resin using brine and uses water and salt. Follow the unit manual for settings and suitable salt.", "source":"epa"},
+    {"id":"selection", "keywords":["select","size","choose","capacity","buy"], "answer":"Compare measured hardness, household water demand and the unit capacity. Consider water and salt efficiency when comparing models.", "source":"epa"},
+    {"id":"limits", "keywords":["safe","drink","bacteria","disinfect","contamination"], "answer":"Softening addresses hardness. It does not establish microbiological safety or replace contaminant testing and suitable treatment.", "source":"psu"},
+    {"id":"maintenance", "keywords":["maintenance","maintain","service","clean","manual"], "answer":"Use the model-specific manual for maintenance and regeneration settings. Monitor performance and seek service if hardness returns unexpectedly.", "source":"epa"}
+  ]
+}
+

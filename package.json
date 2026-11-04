@@ -1,0 +1,33 @@
+{
+  "name": "softwater-assist-railway",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build --webpack",
+    "start": "prisma migrate deploy && node prisma/seed.mjs && next start --hostname 0.0.0.0",
+    "test": "vitest run",
+    "db:seed": "node prisma/seed.mjs"
+  },
+  "engines": { "node": ">=22" },
+  "packageManager": "pnpm@11.25.0",
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "next": "latest",
+    "prisma": "^6.19.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "^0.475.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}
