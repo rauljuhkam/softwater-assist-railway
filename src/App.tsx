@@ -52,6 +52,7 @@ export const App: React.FC = () => {
       <Sidebar
         sessions={sessions}
         activeSessionId={activeSessionId}
+        prompts={prompts}
         onSelectSession={selectSession}
         onNewChat={() => createNewSession()}
         onDeleteSession={deleteSession}
