@@ -14,6 +14,15 @@ function setting(value: unknown) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1 || Math.abs(value * 10 - Math.round(value * 10)) > 0.00001) return fail(400, 'Settings must be between 0 and 1 in steps of 0.1.');
   return value;
 }
+function isAllowedOrigin(request: Request, origin: string) {
+  // Railway terminates HTTPS at its proxy. Next.js can therefore receive an
+  // internal HTTP URL even when the browser is using our public HTTPS domain.
+  // Trust the deployment-configured public domain, never a forwarded header.
+  const allowed = new Set([new URL(request.url).origin]);
+  const publicDomain = process.env.RAILWAY_PUBLIC_DOMAIN;
+  if (publicDomain) allowed.add(`https://${publicDomain}`);
+  return allowed.has(origin);
+}
 async function body(request: Request): Promise<Record<string, unknown>> {
   const raw = await request.text();
   if (raw.length > 24000) return fail(413, 'This request is too large.');
@@ -54,7 +63,7 @@ export async function handle(request: Request, path: string[]) {
   try {
     const method = request.method;
     const origin = request.headers.get('origin');
-    if (method !== 'GET' && origin && origin !== new URL(request.url).origin) return fail(403, 'Please use this app to make changes.');
+    if (method !== 'GET' && origin && !isAllowedOrigin(request, origin)) return fail(403, 'Please use this app to make changes.');
     const [resource, id, sub] = path;
     if (path.length > 3) return fail(404, 'Endpoint not found.');
     if (resource === 'health' && method === 'GET' && path.length === 1) {

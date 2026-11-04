@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 const { db, tx, answer } = vi.hoisted(() => {
   const tx = { chatSession: { updateMany: vi.fn(), findUniqueOrThrow: vi.fn(), update: vi.fn() }, message: { count: vi.fn(), create: vi.fn(), deleteMany: vi.fn() } };
   const db = { chatSession: { findMany: vi.fn(), findUnique: vi.fn(), update: vi.fn(), delete: vi.fn(), updateMany: vi.fn() }, $transaction: vi.fn(), $queryRaw: vi.fn() };
@@ -10,6 +10,7 @@ import { handle } from '../server/api';
 const chat = { id: 'a', title: 'Test', model: 'GPT-4 (simulated)', persona: 'Water basics', temperature: 0.7, topP: 0.9, generation: 1, pending: true, createdAt: new Date(0), updatedAt: new Date(1), messages: [] };
 const request = (path: string, method = 'GET', input?: unknown) => new Request(`http://localhost/api/${path}`, { method, body: input === undefined ? undefined : JSON.stringify(input) });
 beforeEach(() => {
+  vi.stubEnv('RAILWAY_PUBLIC_DOMAIN', '');
   vi.resetAllMocks();
   db.$transaction.mockImplementation(async callback => callback(tx));
   db.chatSession.findUnique.mockResolvedValue(chat);
@@ -19,6 +20,7 @@ beforeEach(() => {
   tx.message.count.mockResolvedValue(0);
   answer.mockResolvedValue({ text: 'Educational answer' });
 });
+afterEach(() => vi.unstubAllEnvs());
 describe('Railway API boundaries and reply cancellation', () => {
   it('rejects empty messages before writing', async () => {
     const result = await handle(request('chats/a/messages', 'POST', { text: '  ' }), ['chats', 'a', 'messages']);
@@ -37,6 +39,24 @@ describe('Railway API boundaries and reply cancellation', () => {
   });
   it('rejects cross-origin writes', async () => {
     const result = await handle(new Request('http://localhost/api/chats/a', { method: 'DELETE', headers: { origin: 'https://other.test' } }), ['chats', 'a']);
+    expect(result.status).toBe(403); expect(db.chatSession.delete).not.toHaveBeenCalled();
+  });
+  it('accepts same-origin writes in local development', async () => {
+    db.chatSession.update.mockResolvedValue(chat);
+    const result = await handle(new Request('http://localhost/api/chats/a', { method: 'PATCH', headers: { origin: 'http://localhost' }, body: JSON.stringify({ topP: 0.8 }) }), ['chats', 'a']);
+    expect(result.status).toBe(200);
+    expect(db.chatSession.update).toHaveBeenCalled();
+  });
+  it('accepts the Railway HTTPS origin behind an internal HTTP proxy', async () => {
+    vi.stubEnv('RAILWAY_PUBLIC_DOMAIN', 'softwater-assist-railway-production.up.railway.app');
+    db.chatSession.update.mockResolvedValue(chat);
+    const result = await handle(new Request('http://0.0.0.0:8080/api/chats/a', { method: 'PATCH', headers: { origin: 'https://softwater-assist-railway-production.up.railway.app' }, body: JSON.stringify({ topP: 0.8 }) }), ['chats', 'a']);
+    expect(result.status).toBe(200);
+    expect(db.chatSession.update).toHaveBeenCalledWith(expect.objectContaining({ data: { topP: 0.8 } }));
+  });
+  it('does not trust a different origin even if forwarded headers claim it', async () => {
+    vi.stubEnv('RAILWAY_PUBLIC_DOMAIN', 'softwater-assist-railway-production.up.railway.app');
+    const result = await handle(new Request('http://0.0.0.0:8080/api/chats/a', { method: 'DELETE', headers: { origin: 'https://other.test', 'x-forwarded-host': 'other.test', 'x-forwarded-proto': 'https' } }), ['chats', 'a']);
     expect(result.status).toBe(403); expect(db.chatSession.delete).not.toHaveBeenCalled();
   });
   it('does not leak database credentials on failure', async () => {

@@ -16,3 +16,9 @@ Päris Railway deploy, PostgreSQL migratsioon ja algandmed; vestluste ja sõnumi
 
 GitHubi ja Railway kontod pole veel ühendatud. Avalikku teenust pole loodud. Claude Code'i kasutust, isiklikke rahuloluhinnanguid ega tegelikku tööaega ei ole välja mõeldud.
 
+
+## Railway parandus 5 november 2026
+
+Avalikul aadressil blokeeris algne päritolukontroll sama rakenduse kirjutuspäringud: brauseri HTTPS origin erines pöördproksi taga Next.js sisemisest HTTP URL-ist. Kontroll lubab nüüd täpselt Railway keskkonnamuutujaga RAILWAY_PUBLIC_DOMAIN määratud HTTPS päritolu, lisaks päringu enda päritolule. Võõraid domeene ei lubata ning x-forwarded-host päist selleks ei usaldata.
+
+Kõik 23 automaattesti läbisid kontrolli, sealhulgas kolm uut testi: kohalik sama päritoluga kirjutus; Railway avaliku HTTPS domeeni päring sisemisele HTTP URL-ile; võõra päritolu blokeerimine ka võltsitud suunamispäiste korral. Päris avaliku rakenduse saatmise ja taaslaadimise kordustest tehakse pärast paranduse juurutamist.
